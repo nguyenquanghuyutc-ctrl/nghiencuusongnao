@@ -3,64 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nghiên Cứu Liệu Pháp Tần Số Âm Thanh</title>
+    <title>Huy Nguyen | Workspace & Wellness</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Chosen Palette: Warm Healing (Stone base, Sage Green accents, Soft Indigo highlights) -->
-    <!-- Application Structure Plan: The SPA is structured logically for exploration:
-         1. Hero/Intro: Sets the context of sound healing.
-         2. Interactive Solfeggio Explorer: Allows users to click through different frequencies to learn their specific benefits, promoting active engagement rather than passive reading.
-         3. Brainwave Synchronization (Entrainment): Uses a comparative layout to explain how external frequencies affect brain states.
-         4. Clinical Research Dashboard: Presents quantitative data (mocked based on general studies) using Chart.js to show effectiveness in stress reduction and sleep improvement.
-         This structure moves from "What is it?" to "How does it work?" to "What is the proof?", optimizing user understanding. -->
+    <!-- Chosen Palette: Modern Executive Oasis (Stone background, Indigo for focus/productivity, Emerald for wellness/healing) -->
+    <!-- Application Structure Plan: Advanced Productivity Dashboard layout.
+         1. Top Navigation: Branding, Real-time Clock/Calendar, Dynamic Motivational Quote.
+         2. Left Column (Fixed context): The "Wellness Engine" - Frequency selector and Smart Player.
+         3. Right Column (Dynamic workspace): A tabbed interface.
+            - Tab 1: Focus Timer (Pomodoro logic).
+            - Tab 2: Task & Idea Manager (Todo list + Textarea with LocalStorage).
+            - Tab 3: Science/Stats (Chart.js implementation).
+         This split layout allows users to manage their audio therapy while simultaneously working on tasks or tracking time. -->
     <!-- Visualization & Content Choices:
-         - Solfeggio Explorer (Goal: Organize/Inform) -> Interactive Buttons + Dynamic Text Block. Justification: Prevents overwhelming text; lets users explore at their own pace.
-         - Stress Reduction Line Chart (Goal: Change over time) -> Chart.js Line Chart. Justification: Best for showing trends (Before vs After therapy over weeks).
-         - Efficacy Bar Chart (Goal: Compare) -> Chart.js Bar Chart. Justification: Clearly compares the effectiveness of different frequency types on various ailments.
-         - NO SVG/Mermaid used. Layout relies on Tailwind CSS, standard HTML elements, and Canvas for charts. -->
+         - Pomodoro UI (Goal: Track time) -> Big CSS text with JS interval.
+         - Task List (Goal: Organize) -> HTML Checkboxes + JS LocalStorage.
+         - Smart Player (Goal: Experience) -> Clickable Image to YT (Bypass Error 153).
+         - Data Charts (Goal: Inform) -> Chart.js.
+         - NO SVG/Mermaid. Pure HTML/CSS styling for UI elements (circles, buttons). -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <style>
-        /* CSS tuỳ chỉnh tối thiểu để đảm bảo giới hạn vùng chứa biểu đồ theo yêu cầu */
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px; /* Giới hạn độ rộng tối đa */
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px; /* Chiều cao mặc định */
-            max-height: 400px;
-        }
-        @media (max-width: 768px) {
-            .chart-container {
-                height: 250px; /* Thích ứng trên thiết bị di động */
-            }
-        }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Custom scrollbar for interactive list */
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: #f5f5f4; 
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #d6d3d1; 
-            border-radius: 4px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #a8a29e; 
-        }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Chart container constraint */
+        .chart-container { position: relative; width: 100%; max-width: 100%; height: 280px; }
         
-        /* Simple CSS animations */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Glassmorphism utilities */
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        
+        /* Custom Checkbox */
+        .task-checkbox:checked + label { text-decoration: line-through; color: #9ca3af; }
     </style>
     <script>
         tailwind.config = {
@@ -68,423 +47,485 @@
                 extend: {
                     colors: {
                         stone: { 50: '#fafaf9', 100: '#f5f5f4', 800: '#292524', 900: '#1c1917' },
-                        sage: { 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857' },
-                        indigo: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1' }
+                        indigo: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 900: '#312e81' },
+                        emerald: { 50: '#ecfdf5', 500: '#10b981', 600: '#059669' }
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'] }
                 }
             }
         }
     </script>
 </head>
-<body class="bg-stone-50 text-stone-800 font-sans antialiased leading-relaxed">
+<body class="bg-stone-100 text-stone-800 font-sans antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- Header / Hero Section -->
-    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-sage-700 tracking-tight">VibraHeal Analytics</h1>
-            <nav class="hidden md:flex space-x-6 text-sm font-medium text-stone-600">
-                <a href="#tong-quan" class="hover:text-sage-600 transition">Tổng quan</a>
-                <a href="#kham-pha-tan-so" class="hover:text-sage-600 transition">Hệ thống Solfeggio</a>
-                <a href="#nghien-cuu" class="hover:text-sage-600 transition">Dữ liệu Nghiên cứu</a>
-            </nav>
+    <!-- TOP BAR: Lịch, Đồng hồ & Quote -->
+    <header class="bg-white border-b border-stone-200 shadow-sm z-10 flex-shrink-0">
+        <div class="px-6 py-4 flex justify-between items-center">
+            
+            <!-- Logo & Author -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-900 text-white flex items-center justify-center font-bold text-xl shadow-inner">HN</div>
+                <div>
+                    <h1 class="font-bold text-stone-900 leading-tight">HuyNguyen Workspace</h1>
+                    <p class="text-xs text-stone-500 font-medium tracking-wide">INTERNAL WELLNESS & FOCUS</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Quote -->
+            <div class="hidden md:flex flex-col items-center justify-center max-w-xl text-center">
+                <p id="motivational-quote" class="text-sm font-medium text-indigo-700 italic">"Đang tải dữ liệu..."</p>
+            </div>
+
+            <!-- Calendar & Time -->
+            <div class="text-right flex items-center gap-4">
+                <div class="text-right">
+                    <p id="current-time" class="text-xl font-bold text-stone-800 font-mono tracking-tighter">00:00</p>
+                    <p id="current-date" class="text-xs text-stone-500 font-medium">Thứ..., ngày... tháng...</p>
+                </div>
+                <div class="text-2xl text-stone-300">📅</div>
+            </div>
+
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-20">
+    <!-- MAIN DASHBOARD -->
+    <main class="flex-grow flex flex-col lg:flex-row overflow-hidden max-w-screen-2xl mx-auto w-full">
+        
+        <!-- ==================== CỘT TRÁI: ÂM THANH TRỊ LIỆU (WELLNESS) ==================== -->
+        <section class="lg:w-1/3 w-full bg-white border-r border-stone-200 flex flex-col flex-shrink-0 overflow-y-auto custom-scroll">
+            <div class="p-6 pb-2 border-b border-stone-100">
+                <h2 class="text-lg font-bold text-stone-900 flex items-center gap-2">
+                    <span class="text-emerald-500">🎧</span> Trạm Âm Thanh Phục Hồi
+                </h2>
+                <p class="text-xs text-stone-500 mt-1">Chọn tần số phù hợp với trạng thái của bạn</p>
+            </div>
+            
+            <!-- Smart Player Container -->
+            <div class="p-6 pb-4">
+                <div id="smart-player-container" class="w-full aspect-video bg-stone-900 rounded-xl shadow-md relative group cursor-pointer overflow-hidden border border-stone-200">
+                    <img id="yt-thumbnail" src="" alt="Cover" class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-500 transform group-hover:scale-105">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <a id="yt-play-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-emerald-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg group-hover:bg-emerald-400 group-hover:scale-110 transition duration-300 z-10">
+                            <span class="text-2xl ml-1 mt-[-2px]">▶</span>
+                        </a>
+                    </div>
+                    <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+                        <span class="bg-black/60 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm">YouTube Premium (Bản quyền)</span>
+                        <span class="text-[10px] text-white/80">Mở tab mới</span>
+                    </div>
+                </div>
+                
+                <!-- Hiển thị công dụng tần số đang chọn -->
+                <div id="frequency-quick-info" class="mt-4 bg-emerald-50 p-3 rounded-lg border border-emerald-100 text-sm">
+                    <!-- JS Render -->
+                </div>
+            </div>
 
-        <!-- Section: Tổng quan -->
-        <section id="tong-quan" class="text-center max-w-3xl mx-auto">
-            <h2 class="text-4xl font-extrabold text-stone-900 mb-6">Khoa Học Về Tần Số Chữa Lành</h2>
-            <p class="text-lg text-stone-600 mb-8">
-                Báo cáo này tổng hợp các nghiên cứu về cách các tần số âm thanh cụ thể (như thang âm Solfeggio và Nhịp điệu Binaural) tương tác với cơ thể và não bộ con người. Thay vì chỉ nghe nhạc để giải trí, các nghiên cứu cho thấy sóng âm có thể ảnh hưởng đến trạng thái tinh thần, giảm căng thẳng và hỗ trợ quá trình phục hồi tế bào.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 hover:shadow-md transition">
-                    <div class="text-3xl mb-3 text-sage-500">〰️</div>
-                    <h3 class="font-bold text-lg mb-2">Cộng hưởng (Resonance)</h3>
-                    <p class="text-sm text-stone-600">Mọi tế bào đều dao động ở một tần số. Âm thanh bên ngoài có thể cộng hưởng, đưa tế bào trở lại trạng thái cân bằng.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 hover:shadow-md transition">
-                    <div class="text-3xl mb-3 text-indigo-500">🧠</div>
-                    <h3 class="font-bold text-lg mb-2">Đồng bộ Sóng não</h3>
-                    <p class="text-sm text-stone-600">Hiện tượng 'Brainwave Entrainment' giúp não bộ đồng bộ hóa với nhịp điệu âm thanh, dễ dàng tiến vào trạng thái thư giãn sâu.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 hover:shadow-md transition">
-                    <div class="text-3xl mb-3 text-amber-500">🧬</div>
-                    <h3 class="font-bold text-lg mb-2">Tác động Sinh lý</h3>
-                    <p class="text-sm text-stone-600">Nghiên cứu lâm sàng cho thấy sự giảm thiểu hormone Cortisol (căng thẳng) khi nghe các tần số cụ thể trong 30 phút.</p>
-                </div>
+            <!-- Danh sách Tần số -->
+            <div class="px-4 pb-6 flex-grow" id="frequency-list">
+                <!-- JS Render -->
             </div>
         </section>
 
-        <!-- Section: Trình Khám Phá Tần Số Solfeggio -->
-        <section id="kham-pha-tan-so" class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-stone-900 mb-2">Trình Khám Phá: Thang Âm Solfeggio</h2>
-                <p class="text-stone-600">
-                    Hệ thống tần số cổ đại này được cho là có tác động sâu sắc đến ý thức và thể chất. Nhấp vào các tần số dưới đây để xem phân tích chi tiết về tác động sinh học và tâm lý học dựa trên các báo cáo khảo sát.
-                </p>
+        <!-- ==================== CỘT PHẢI: WORKSPACE & PRODUCTIVITY ==================== -->
+        <section class="lg:w-2/3 w-full bg-stone-50 flex flex-col flex-grow overflow-hidden relative">
+            
+            <!-- Tabs Navigation -->
+            <div class="px-8 pt-6 pb-0 flex gap-6 border-b border-stone-200">
+                <button onclick="switchTab('tab-timer', this)" class="tab-btn active pb-3 font-bold text-sm border-b-2 border-indigo-600 text-indigo-700 transition">⏰ Hẹn Giờ Tập Trung (Focus)</button>
+                <button onclick="switchTab('tab-notes', this)" class="tab-btn pb-3 font-bold text-sm border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition">📝 Công Việc & Ý Tưởng</button>
+                <button onclick="switchTab('tab-stats', this)" class="tab-btn pb-3 font-bold text-sm border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition">📊 Dữ Liệu Khoa Học</button>
             </div>
 
-            <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Danh sách tần số -->
-                <div class="lg:w-1/3 flex flex-col gap-2 custom-scroll max-h-[450px] overflow-y-auto pr-2" id="frequency-list">
-                    <!-- Javascript will populate this -->
-                </div>
+            <!-- TABS CONTENT AREA -->
+            <div class="p-8 overflow-y-auto custom-scroll flex-grow relative">
+                
+                <!-- TAB 1: POMODORO TIMER -->
+                <div id="tab-timer" class="tab-content fade-in h-full flex flex-col items-center justify-center">
+                    <div class="bg-white p-10 rounded-3xl shadow-sm border border-stone-200 w-full max-w-md text-center glass relative overflow-hidden">
+                        
+                        <!-- Decal -->
+                        <div class="absolute top-[-20px] right-[-20px] text-9xl text-indigo-50 opacity-50 select-none">⏱</div>
 
-                <!-- Bảng chi tiết -->
-                <div class="lg:w-2/3 bg-stone-50 rounded-xl p-8 border border-stone-200 flex flex-col justify-center min-h-[450px]" id="frequency-details">
-                    <div class="text-center text-stone-400">
-                        <div class="text-5xl mb-4">🎛️</div>
-                        <p class="text-lg">Hãy chọn một tần số bên trái để xem chi tiết kết quả nghiên cứu.</p>
+                        <h3 class="text-stone-500 font-bold uppercase tracking-widest text-xs mb-6">Phương pháp Pomodoro</h3>
+                        
+                        <div id="timer-display" class="text-7xl md:text-8xl font-mono font-bold text-indigo-900 mb-8 tracking-tighter shadow-sm inline-block px-4 py-2 bg-stone-50 rounded-2xl border border-stone-100">
+                            25:00
+                        </div>
+
+                        <div class="flex justify-center gap-4 mb-8">
+                            <button onclick="setTimerMode(25)" class="px-4 py-1 text-xs font-bold rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition">Làm việc (25p)</button>
+                            <button onclick="setTimerMode(5)" class="px-4 py-1 text-xs font-bold rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition">Nghỉ ngắn (5p)</button>
+                        </div>
+
+                        <div class="flex justify-center gap-4 relative z-10">
+                            <button id="btn-timer-start" onclick="toggleTimer()" class="w-32 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md transition transform active:scale-95">BẮT ĐẦU</button>
+                            <button onclick="resetTimer()" class="w-32 py-3 rounded-xl bg-white border border-stone-200 text-stone-600 font-bold hover:bg-stone-50 transition transform active:scale-95">ĐẶT LẠI</button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- TAB 2: TASKS & NOTES -->
+                <div id="tab-notes" class="tab-content hidden fade-in h-full">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                        
+                        <!-- To-Do List -->
+                        <div class="bg-white flex flex-col rounded-2xl shadow-sm border border-stone-200 h-[500px]">
+                            <div class="p-4 border-b border-stone-100 bg-stone-50 rounded-t-2xl flex justify-between items-center">
+                                <h3 class="font-bold text-stone-800 flex items-center gap-2"><span>☑️</span> Việc Cần Làm</h3>
+                                <span class="text-xs text-stone-400">Tự động lưu</span>
+                            </div>
+                            <div class="p-4 flex gap-2 border-b border-stone-100">
+                                <input type="text" id="task-input" placeholder="Thêm công việc mới..." class="flex-grow px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 transition" onkeypress="handleTaskEnter(event)">
+                                <button onclick="addTask()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition">Thêm</button>
+                            </div>
+                            <ul id="task-list" class="p-4 flex-grow overflow-y-auto custom-scroll space-y-2">
+                                <!-- JS Render Tasks -->
+                            </ul>
+                        </div>
+
+                        <!-- Ideas Pad -->
+                        <div class="bg-yellow-50 flex flex-col rounded-2xl shadow-sm border border-yellow-200 h-[500px]">
+                            <div class="p-4 border-b border-yellow-200 flex justify-between items-center">
+                                <h3 class="font-bold text-yellow-800 flex items-center gap-2"><span>💡</span> Ý Tưởng & Ghi Chú Nhanh</h3>
+                                <span class="text-xs text-yellow-600/50">Tự động lưu</span>
+                            </div>
+                            <textarea id="notepad" class="flex-grow p-4 bg-transparent border-none focus:ring-0 text-yellow-900 text-sm leading-relaxed resize-none custom-scroll placeholder-yellow-700/30 font-mono" placeholder="Gõ ý tưởng chợt lóe lên của bạn vào đây..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: KHOA HỌC & BIỂU ĐỒ -->
+                <div id="tab-stats" class="tab-content hidden fade-in h-full overflow-y-auto custom-scroll">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 mb-6">
+                        <h3 class="font-bold text-stone-800 mb-4 flex items-center gap-2"><span>📉</span> Biểu đồ Stress Cortisol (4 Tuần)</h3>
+                        <div class="chart-container"><canvas id="stressChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-stone-800 mb-4 flex items-center gap-2"><span>🌙</span> Hiệu quả Phục hồi Giấc ngủ</h3>
+                        <div class="chart-container"><canvas id="sleepChart"></canvas></div>
+                    </div>
+                </div>
+
             </div>
         </section>
-
-        <!-- Section: Dữ Liệu Nghiên Cứu Định Lượng -->
-        <section id="nghien-cuu">
-            <div class="mb-10 text-center max-w-2xl mx-auto">
-                <h2 class="text-3xl font-bold text-stone-900 mb-4">Kết Quả Thử Nghiệm Lâm Sàng</h2>
-                <p class="text-stone-600">Phân tích dữ liệu từ các nhóm thử nghiệm kiểm soát, so sánh tác động của việc nghe nhạc tần số (đặc biệt là 528Hz và nhịp Binaural) đối với các chỉ số sức khỏe chính.</p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <!-- Biểu đồ 1: Mức độ căng thẳng -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
-                    <h3 class="text-xl font-bold text-stone-800 mb-2">Tác Động Lên Nồng Độ Cortisol (Căng thẳng)</h3>
-                    <p class="text-sm text-stone-500 mb-6">Theo dõi nồng độ Cortisol trong nước bọt qua 4 tuần điều trị bằng tần số 528Hz (30 phút/ngày).</p>
-                    <div class="chart-container">
-                        <canvas id="stressChart"></canvas>
-                    </div>
-                    <div class="mt-4 text-sm text-stone-600 bg-sage-50 p-3 rounded-lg border border-sage-100">
-                        <span class="font-semibold text-sage-700">Kết luận:</span> Nhóm sử dụng liệu pháp âm thanh cho thấy mức độ căng thẳng giảm ổn định và đáng kể (lên đến 35%) so với nhóm đối chứng (chỉ nghe nhạc nền thông thường).
-                    </div>
-                </div>
-
-                <!-- Biểu đồ 2: Cải thiện giấc ngủ -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
-                    <h3 class="text-xl font-bold text-stone-800 mb-2">Hiệu Quả Cải Thiện Giấc Ngủ (Sóng Delta)</h3>
-                    <p class="text-sm text-stone-500 mb-6">Tỷ lệ phần trăm người tham gia báo cáo cải thiện chất lượng giấc ngủ sâu sau 14 ngày sử dụng nhịp Binaural Delta (2-4Hz).</p>
-                    
-                    <!-- Interactive Filter for Chart 2 -->
-                    <div class="mb-4 flex gap-2">
-                        <button onclick="updateSleepChart('all')" class="px-3 py-1 text-sm rounded-full bg-indigo-100 text-indigo-700 font-medium hover:bg-indigo-200 transition">Tất cả độ tuổi</button>
-                        <button onclick="updateSleepChart('young')" class="px-3 py-1 text-sm rounded-full bg-stone-100 text-stone-600 font-medium hover:bg-stone-200 transition">18-35 tuổi</button>
-                        <button onclick="updateSleepChart('old')" class="px-3 py-1 text-sm rounded-full bg-stone-100 text-stone-600 font-medium hover:bg-stone-200 transition">36-60 tuổi</button>
-                    </div>
-
-                    <div class="chart-container">
-                        <canvas id="sleepChart"></canvas>
-                    </div>
-                    <div class="mt-4 text-sm text-stone-600 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                        <span class="font-semibold text-indigo-700">Phân tích:</span> Sóng Delta đặc biệt hiệu quả trong việc giảm chứng mất ngủ mãn tính. Nhóm người lớn tuổi phản ứng tích cực nhất với liệu pháp này để kéo dài giai đoạn ngủ sâu.
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer Note -->
-        <footer class="text-center pt-10 border-t border-stone-200 pb-10">
-            <p class="text-sm text-stone-500">
-                Báo cáo tổng hợp mang tính chất tham khảo. Liệu pháp âm thanh là phương pháp hỗ trợ bổ sung, không thay thế điều trị y tế chuyên nghiệp.<br>
-                © 2026 VibraHeal Data Analytics.
-            </p>
-        </footer>
-
     </main>
 
-    <!-- JavaScript Logic -->
-    <script>
-        // --- DATA STORAGE ---
+    <!-- KẾT THÚC GIAO DIỆN -->
 
-        // Dữ liệu cho Trình khám phá Solfeggio
-        const frequenciesData = [
-            {
-                hz: 174,
-                name: "Giảm Đau Thể Chất",
-                color: "bg-red-100 text-red-700 border-red-200",
-                icon: "🩹",
-                description: "Được coi là 'thuốc giảm đau' tự nhiên. Tần số này tác động như một loại thuốc gây tê an toàn, giúp nội tạng và các mô có cảm giác an toàn, giảm bớt đau đớn về thể chất.",
-                stats: { efficacy: "78%", users: "1,200+", focus: "Giảm đau lưng, đau đầu" }
-            },
-            {
-                hz: 285,
-                name: "Phục Hồi Tế Bào",
-                color: "bg-orange-100 text-orange-700 border-orange-200",
-                icon: "🧬",
-                description: "Gửi tín hiệu đến các tế bào và mô để cấu trúc lại các cơ quan bị tổn thương. Nghiên cứu chỉ ra tần số này thúc đẩy quá trình chữa lành vết thương hở và bỏng nhanh hơn.",
-                stats: { efficacy: "65%", users: "950+", focus: "Tái tạo mô, phục hồi năng lượng" }
-            },
-            {
-                hz: 396,
-                name: "Giải Phóng Nỗi Sợ Hãi",
-                color: "bg-yellow-100 text-yellow-700 border-yellow-200",
-                icon: "🛡️",
-                description: "Tần số làm sạch cảm giác tội lỗi và sợ hãi (những rào cản chính ngăn cản sự hiện thực hóa). Hữu ích cho những người bị rối loạn lo âu và trầm cảm nhẹ.",
-                stats: { efficacy: "82%", users: "3,400+", focus: "Giảm lo âu, rối loạn hoảng sợ" }
-            },
-            {
-                hz: 417,
-                name: "Xóa Bỏ Tổn Thương",
-                color: "bg-green-100 text-green-700 border-green-200",
-                icon: "🔄",
-                description: "Sóng âm giúp xóa bỏ ký ức tiêu cực và dọn sạch các trải nghiệm tồi tệ. Khuyến khích sự thay đổi, cung cấp năng lượng vô tận cho tế bào.",
-                stats: { efficacy: "70%", users: "2,100+", focus: "Phục hồi chấn thương tâm lý (PTSD)" }
-            },
-            {
-                hz: 528,
-                name: "Phép Màu & Sửa Chữa DNA",
-                color: "bg-emerald-100 text-emerald-700 border-emerald-200",
-                icon: "✨",
-                description: "Tần số nổi tiếng nhất, được sử dụng bởi các nhà hóa sinh di truyền để sửa chữa DNA bị hỏng. Mang lại sự biến đổi kỳ diệu, tăng cường năng lượng sống, sự tỉnh táo và sáng tạo.",
-                stats: { efficacy: "89%", users: "10,000+", focus: "Sức khỏe toàn diện, thiền định sâu" }
-            },
-            {
-                hz: 639,
-                name: "Hòa Hợp Các Mối Quan Hệ",
-                color: "bg-teal-100 text-teal-700 border-teal-200",
-                icon: "🤝",
-                description: "Kích thích khu vực não bộ liên quan đến sự thấu hiểu, khoan dung và tình yêu. Giúp hàn gắn các mối quan hệ rạn nứt trong gia đình, đối tác.",
-                stats: { efficacy: "60%", users: "1,500+", focus: "Cân bằng cảm xúc, giao tiếp" }
-            },
-            {
-                hz: 741,
-                name: "Đánh Thức Trực Giác",
-                color: "bg-cyan-100 text-cyan-700 border-cyan-200",
-                icon: "👁️",
-                description: "Làm sạch tế bào khỏi các loại bức xạ điện từ. Kích hoạt trực giác, giúp giải quyết vấn đề và thể hiện bản thân một cách rõ ràng.",
-                stats: { efficacy: "75%", users: "1,800+", focus: "Thanh lọc tinh thần, tập trung" }
-            },
-            {
-                hz: 852,
-                name: "Kết Nối Tâm Linh",
-                color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-                icon: "🌌",
-                description: "Được sử dụng để nâng cao nhận thức, khôi phục trật tự tinh thần. Liên quan chặt chẽ đến sự nhạy bén của não bộ trong các bài test sóng Gamma.",
-                stats: { efficacy: "80%", users: "2,500+", focus: "Nhận thức cao, thư giãn sâu" }
-            }
+    <script>
+        // ==========================================
+        // 1. DATA: QUOTES, FREQUENCIES, CHARTS
+        // ==========================================
+        
+        const quotes = [
+            "Kỷ luật là cầu nối giữa mục tiêu và thành tựu.",
+            "Nghỉ ngơi không phải là lãng phí thời gian, mà là nạp lại năng lượng để đi xa hơn.",
+            "Cách để bắt đầu là ngừng nói và bắt tay vào làm.",
+            "Sự tập trung là nghệ thuật nói 'Không' với những điều không quan trọng.",
+            "Áp lực tạo ra kim cương. Nhưng sức khỏe tinh thần mới là mỏ kim cương đó.",
+            "Đừng đếm thời gian, hãy làm cho thời gian trở nên có ý nghĩa."
         ];
 
-        // Dữ liệu cho biểu đồ Căng thẳng (Line Chart)
-        const stressData = {
-            labels: ['Tuần 0 (Bắt đầu)', 'Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
-            datasets: [
-                {
-                    label: 'Nhóm Nghe 528Hz (N=50)',
-                    data: [85, 70, 58, 50, 42],
-                    borderColor: '#10b981', // Sage 500
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    borderWidth: 3
-                },
-                {
-                    label: 'Nhóm Đối Chứng (N=50)',
-                    data: [84, 82, 80, 83, 79],
-                    borderColor: '#a8a29e', // Stone 400
-                    borderDash: [5, 5],
-                    tension: 0.4,
-                    fill: false,
-                    borderWidth: 2
-                }
-            ]
-        };
+        const audioData = [
+            { hz: 174, name: "Giảm Đau Mỏi (Cổ/Vai/Gáy)", icon: "💺", videoId: "ZiBxp4WXqi0", desc: "Sóng âm hoạt động như thuốc tê tự nhiên. Rất tốt khi ngồi máy tính lâu." },
+            { hz: 285, name: "Phục Hồi Tế Bào Tối Đa", icon: "🧬", videoId: "5iIlyn-M4XI", desc: "Thúc đẩy cấu trúc lại mô cơ bị tổn thương, nạp lại năng lượng sinh học." },
+            { hz: 396, name: "Xả Trầm Cảm & Lo Âu", icon: "🌪️", videoId: "hqSEyQU0N0U", desc: "Nghe khi bị 'ngộp' vì deadline. Giúp dọn dẹp cảm giác sợ hãi, bồn chồn." },
+            { hz: 528, name: "Tập Trung & Tái Tạo (Khuyên dùng)", icon: "⚡", videoId: "nVk7hTWcQK4", extraParams: "&t=1869s", desc: "Tần số phép màu. Bật volume nhỏ làm nhạc nền để vào trạng thái Deep Work." },
+            { hz: 639, name: "Cân Bằng Cảm Xúc (EQ)", icon: "🤝", videoId: "QIiONG27yVE", desc: "Hữu ích sau những cuộc họp căng thẳng. Giúp lấy lại sự thấu cảm và bình tĩnh." },
+            { hz: 741, name: "Giải Quyết Sương Mù Não", icon: "💡", videoId: "cWNUa2hLrwM", desc: "Đánh thức trực giác. Dùng khi bí ý tưởng, cần sáng tạo và tư duy logic." },
+            { hz: 852, name: "Thư Giãn & Ngủ Sâu", icon: "🌙", videoId: "YSGgMS6ZvPk", desc: "Hạ sóng não xuống dải Theta. Nghe trước khi ngủ để tắt công tắc não bộ." }
+        ];
 
-        // Dữ liệu cho biểu đồ Giấc ngủ (Bar Chart) - theo nhóm
-        const sleepDataSets = {
-            'all': [75, 62, 80, 45],
-            'young': [60, 50, 85, 60],
-            'old': [88, 75, 70, 30]
-        };
+        // ==========================================
+        // 2. HEADER: ĐỒNG HỒ, NGÀY THÁNG, QUOTE
+        // ==========================================
+        function initHeader() {
+            // Quote ngẫu nhiên
+            document.getElementById('motivational-quote').innerText = `"${quotes[Math.floor(Math.random() * quotes.length)]}"`;
 
-        // --- INTERACTION LOGIC ---
-
-        // 1. Khởi tạo Trình Khám Phá Solfeggio
-        function initSolfeggioExplorer() {
-            const listContainer = document.getElementById('frequency-list');
+            // Đồng hồ & Lịch
+            const timeEl = document.getElementById('current-time');
+            const dateEl = document.getElementById('current-date');
+            const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
             
-            frequenciesData.forEach((freq, index) => {
-                const btn = document.createElement('button');
-                btn.className = `text-left px-5 py-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition shadow-sm flex items-center justify-between group`;
-                btn.onclick = () => showFrequencyDetails(index, btn);
-                
-                btn.innerHTML = `
-                    <div>
-                        <span class="font-bold text-lg text-stone-800">${freq.hz} Hz</span>
-                        <p class="text-sm text-stone-500">${freq.name}</p>
-                    </div>
-                    <span class="text-2xl opacity-50 group-hover:opacity-100 transition transform group-hover:scale-110">${freq.icon}</span>
-                `;
-                listContainer.appendChild(btn);
-            });
-            
-            // Tự động click mục đầu tiên (528Hz)
-            showFrequencyDetails(4, listContainer.children[4]);
+            function updateClock() {
+                const now = new Date();
+                // Sửa đổi ở đây: Thêm 'second: 2-digit' để hiển thị giây
+                timeEl.innerText = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                dateEl.innerText = `${days[now.getDay()]}, ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
         }
 
-        function showFrequencyDetails(index, activeBtn) {
-            const data = frequenciesData[index];
-            const detailContainer = document.getElementById('frequency-details');
+        // ==========================================
+        // 3. TAB MANAGEMENT
+        // ==========================================
+        window.switchTab = function(tabId, btnElement) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
             
-            // Update active state on buttons
-            const buttons = document.getElementById('frequency-list').children;
-            for(let btn of buttons) {
-                btn.classList.remove('border-sage-500', 'ring-2', 'ring-sage-200');
-            }
-            activeBtn.classList.add('border-sage-500', 'ring-2', 'ring-sage-200');
+            // Update button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn pb-3 font-bold text-sm border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition";
+            });
+            btnElement.className = "tab-btn active pb-3 font-bold text-sm border-b-2 border-indigo-600 text-indigo-700 transition";
+        };
 
-            // Render details
-            detailContainer.innerHTML = `
-                <div class="fade-in">
-                    <div class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${data.color}">
-                        Tần số Solfeggio
+        // ==========================================
+        // 4. SMART AUDIO PLAYER (CỘT TRÁI)
+        // ==========================================
+        function initAudioPlayer() {
+            const listEl = document.getElementById('frequency-list');
+            
+            audioData.forEach((item, index) => {
+                const btn = document.createElement('button');
+                btn.className = `freq-btn w-full text-left px-4 py-3 rounded-xl border border-transparent bg-stone-50 hover:bg-white hover:shadow-sm hover:border-stone-200 transition-all duration-200 mb-2 flex gap-3 items-center group`;
+                btn.onclick = () => loadAudio(index, btn);
+                
+                btn.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-xl text-stone-600 group-hover:text-emerald-500 transition-colors">
+                        ${item.icon}
                     </div>
-                    <h3 class="text-4xl font-extrabold text-stone-900 mb-2">${data.hz} Hz <span class="text-3xl">${data.icon}</span></h3>
-                    <h4 class="text-xl font-medium text-sage-600 mb-6">${data.name}</h4>
-                    
-                    <p class="text-stone-700 mb-8 leading-relaxed text-lg">
-                        ${data.description}
-                    </p>
-                    
-                    <div class="grid grid-cols-3 gap-4 border-t border-stone-200 pt-6">
-                        <div>
-                            <p class="text-sm text-stone-500 mb-1">Tỷ lệ hiệu quả</p>
-                            <p class="text-2xl font-bold text-stone-800">${data.stats.efficacy}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-stone-500 mb-1">Mẫu khảo sát</p>
-                            <p class="text-2xl font-bold text-stone-800">${data.stats.users}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-stone-500 mb-1">Tác dụng chính</p>
-                            <p class="text-sm font-semibold text-stone-800">${data.stats.focus}</p>
-                        </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-emerald-600 mb-0.5 tracking-wider">${item.hz} HZ</div>
+                        <div class="font-bold text-stone-800 text-sm leading-tight">${item.name}</div>
                     </div>
-                </div>
+                `;
+                listEl.appendChild(btn);
+            });
+
+            loadAudio(3, listEl.children[3]); // Mặc định 528hz
+        }
+
+        function loadAudio(index, activeBtn) {
+            const data = audioData[index];
+            
+            // UI Button Active
+            document.querySelectorAll('.freq-btn').forEach(btn => {
+                btn.classList.remove('border-emerald-200', 'bg-emerald-50');
+                btn.classList.add('bg-stone-50', 'border-transparent');
+            });
+            activeBtn.classList.remove('bg-stone-50', 'border-transparent');
+            activeBtn.classList.add('border-emerald-200', 'bg-emerald-50');
+
+            // Cập nhật Smart Player Link & Thumb
+            const youtubeUrl = `https://www.youtube.com/watch?v=${data.videoId}${data.extraParams || ''}`;
+            document.getElementById('yt-thumbnail').src = `https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg`;
+            document.getElementById('yt-play-link').href = youtubeUrl;
+            document.getElementById('smart-player-container').onclick = () => window.open(youtubeUrl, '_blank');
+
+            // Cập nhật Info box
+            document.getElementById('frequency-quick-info').innerHTML = `
+                <p class="font-bold text-emerald-800 mb-1 flex items-center gap-1"><span>💡</span> Tác dụng:</p>
+                <p class="text-emerald-700">${data.desc}</p>
             `;
         }
 
-        // --- CHART.JS INITIALIZATION ---
+        // ==========================================
+        // 5. POMODORO TIMER
+        // ==========================================
+        let timerInterval = null;
+        let timeRemaining = 25 * 60; // 25 minutes default
+        let isTimerRunning = false;
+
+        const displayEl = document.getElementById('timer-display');
+        const startBtn = document.getElementById('btn-timer-start');
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const s = (timeRemaining % 60).toString().padStart(2, '0');
+            displayEl.innerText = `${m}:${s}`;
+        }
+
+        window.setTimerMode = function(minutes) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timeRemaining = minutes * 60;
+            startBtn.innerText = "BẮT ĐẦU";
+            startBtn.classList.replace('bg-orange-500', 'bg-indigo-600');
+            startBtn.classList.replace('hover:bg-orange-600', 'hover:bg-indigo-700');
+            updateTimerDisplay();
+        };
+
+        window.toggleTimer = function() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                startBtn.innerText = "TIẾP TỤC";
+                startBtn.classList.replace('bg-orange-500', 'bg-indigo-600');
+                startBtn.classList.replace('hover:bg-orange-600', 'hover:bg-indigo-700');
+            } else {
+                isTimerRunning = true;
+                startBtn.innerText = "TẠM DỪNG";
+                startBtn.classList.replace('bg-indigo-600', 'bg-orange-500');
+                startBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-orange-600');
+                
+                timerInterval = setInterval(() => {
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        
+                        playKengSound(); // Phát âm thanh "Keng"
+                        
+                        // Trì hoãn thông báo alert 0.5s để người dùng kịp nghe thấy tiếng chuông vang lên
+                        setTimeout(() => {
+                            alert("Hết giờ! Hãy vươn vai và nghỉ ngơi một lát nhé.");
+                        }, 500);
+                        
+                        setTimerMode(25); // Reset
+                    }
+                }, 1000);
+            }
+        };
+
+        // Hàm tổng hợp âm thanh tiếng Chuông (Keng) trực tiếp bằng trình duyệt
+        function playKengSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                osc.type = 'sine'; // Sóng sine tạo âm thanh trong trẻo
+                osc.frequency.setValueAtTime(880, ctx.currentTime); // Tần số nốt La (A5) tạo tiếng chuông thanh
+
+                // Cấu hình âm vang: Kêu to ngay lập tức và ngân dài nhỏ dần trong 2 giây
+                gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2);
+
+                osc.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 2);
+            } catch (e) {
+                console.log("Trình duyệt không hỗ trợ phát âm thanh", e);
+            }
+        }
+
+        window.resetTimer = function() {
+            setTimerMode(25);
+        };
+
+        // ==========================================
+        // 6. TASKS & NOTES (LOCAL STORAGE)
+        // ==========================================
+        let tasks = JSON.parse(localStorage.getItem('huynguyen_tasks')) || [];
         
-        let stressChartInstance = null;
-        let sleepChartInstance = null;
+        function saveTasks() {
+            localStorage.setItem('huynguyen_tasks', JSON.stringify(tasks));
+        }
 
-        function initCharts() {
-            // Cấu hình chung cho Chart.js để đảm bảo tính responsive
-            Chart.defaults.font.family = "'Inter', sans-serif";
-            Chart.defaults.color = '#57534e'; // stone-500
+        function renderTasks() {
+            const listEl = document.getElementById('task-list');
+            listEl.innerHTML = '';
             
-            const commonOptions = {
-                responsive: true,
-                maintainAspectRatio: false, // BẮT BUỘC để chart tuân theo height của thẻ div cha
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        backgroundColor: 'rgba(28, 25, 23, 0.9)',
-                        padding: 12,
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 },
-                        cornerRadius: 8
-                    }
-                }
-            };
+            if(tasks.length === 0) {
+                listEl.innerHTML = '<li class="text-center text-stone-400 text-sm py-4">Chưa có công việc nào.</li>';
+                return;
+            }
 
-            // 1. Biểu đồ Đường - Giảm Căng Thẳng
-            const ctxStress = document.getElementById('stressChart').getContext('2d');
-            stressChartInstance = new Chart(ctxStress, {
-                type: 'line',
-                data: stressData,
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            min: 30,
-                            max: 100,
-                            title: { display: true, text: 'Chỉ số Cortisol tương đối' }
-                        }
-                    }
-                }
-            });
-
-            // 2. Biểu đồ Cột - Cải Thiện Giấc Ngủ
-            const ctxSleep = document.getElementById('sleepChart').getContext('2d');
-            sleepChartInstance = new Chart(ctxSleep, {
-                type: 'bar',
-                data: {
-                    labels: ['Giảm thời gian chìm vào giấc', 'Tăng thời lượng ngủ sâu', 'Cảm giác tỉnh táo khi dậy', 'Giảm thức giấc giữa đêm'],
-                    datasets: [{
-                        label: '% Người tham gia báo cáo cải thiện',
-                        data: sleepDataSets['all'],
-                        backgroundColor: '#6366f1', // indigo-500
-                        borderRadius: 6,
-                        maxBarThickness: 50
-                    }]
-                },
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            title: { display: true, text: 'Tỷ lệ % cải thiện' }
-                        },
-                        x: {
-                            ticks: {
-                                // Logic bẻ dòng nhãn dài cho Chart.js (approx 16 chars)
-                                callback: function(value, index, values) {
-                                    const label = this.getLabelForValue(value);
-                                    if(label.length > 15) {
-                                        let words = label.split(' ');
-                                        let lines = [];
-                                        let currentLine = words[0];
-                                        for (let i = 1; i < words.length; i++) {
-                                            if (currentLine.length + words[i].length < 16) {
-                                                currentLine += " " + words[i];
-                                            } else {
-                                                lines.push(currentLine);
-                                                currentLine = words[i];
-                                            }
-                                        }
-                                        lines.push(currentLine);
-                                        return lines;
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-3 p-2 hover:bg-stone-50 rounded-lg group";
+                li.innerHTML = `
+                    <input type="checkbox" id="task-${index}" class="task-checkbox mt-1 w-4 h-4 text-indigo-600 rounded border-stone-300 focus:ring-indigo-500 cursor-pointer" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
+                    <label for="task-${index}" class="text-sm font-medium text-stone-700 flex-grow cursor-pointer select-none leading-tight">${task.text}</label>
+                    <button onclick="deleteTask(${index})" class="text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                listEl.appendChild(li);
             });
         }
 
-        // Logic cập nhật biểu đồ giấc ngủ khi bấm nút lọc
-        window.updateSleepChart = function(group) {
-            if(!sleepChartInstance) return;
-            
-            // Update data
-            sleepChartInstance.data.datasets[0].data = sleepDataSets[group];
-            
-            // Update button styles visually
-            const buttons = event.target.parentElement.children;
-            for(let btn of buttons) {
-                btn.className = "px-3 py-1 text-sm rounded-full bg-stone-100 text-stone-600 font-medium hover:bg-stone-200 transition";
+        window.addTask = function() {
+            const input = document.getElementById('task-input');
+            const text = input.value.trim();
+            if (text) {
+                tasks.push({ text: text, completed: false });
+                saveTasks();
+                renderTasks();
+                input.value = '';
             }
-            event.target.className = "px-3 py-1 text-sm rounded-full bg-indigo-100 text-indigo-700 font-medium hover:bg-indigo-200 transition";
-
-            sleepChartInstance.update();
         };
 
-        // Chạy khởi tạo khi DOM đã load xong
-        document.addEventListener('DOMContentLoaded', () => {
-            initSolfeggioExplorer();
-            initCharts();
+        window.handleTaskEnter = function(e) {
+            if (e.key === 'Enter') addTask();
+        };
+
+        window.toggleTask = function(index) {
+            tasks[index].completed = !tasks[index].completed;
+            saveTasks();
+            renderTasks(); // Re-render để áp dụng CSS gạch ngang
+        };
+
+        window.deleteTask = function(index) {
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        };
+
+        // NotePad Auto-save
+        const notepad = document.getElementById('notepad');
+        notepad.value = localStorage.getItem('huynguyen_notes') || '';
+        notepad.addEventListener('input', () => {
+            localStorage.setItem('huynguyen_notes', notepad.value);
         });
 
+        // ==========================================
+        // 7. CHART.JS (TAB 3)
+        // ==========================================
+        function initCharts() {
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            
+            // Stress Chart
+            new Chart(document.getElementById('stressChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+                    datasets: [{
+                        label: 'Mức độ Stress',
+                        data: [85, 65, 50, 38],
+                        borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        fill: true, tension: 0.4, borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
+            });
+
+            // Sleep Chart
+            new Chart(document.getElementById('sleepChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Tốc độ ngủ', 'Ngủ sâu', 'Tỉnh táo'],
+                    datasets: [{
+                        label: '% Cải thiện',
+                        data: [70, 85, 75],
+                        backgroundColor: '#10b981', borderRadius: 4, maxBarThickness: 40
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} }, scales: { y: { max: 100 } } }
+            });
+        }
+
+        // ==========================================
+        // BOOTSTRAP APP
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initHeader();
+            initAudioPlayer();
+            updateTimerDisplay();
+            renderTasks();
+            initCharts();
+        });
     </script>
 </body>
 </html>
